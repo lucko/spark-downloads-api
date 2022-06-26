@@ -1,249 +1,94 @@
-# metadata-api
+# spark-downloads-api
 
-A HTTP API which collects and serves various information about the LuckPerms project.
+A HTTP API which collects and serves various information about the spark project.
 
-The base URL is https://metadata.luckperms.net/
-
-Data is periodically collected from various other APIs (Jenkins, Discord, Patreon, Crowdin), then cached and served according to the routes listed below.
-
-You can append the `?pretty` query parameter to get nicely formatted JSON from any of the supported routes. Otherwise, the JSON output is compacted.
-
+The base URL is https://api.spark.lucko.me/
 
 
 ## Routes
 
->  **Warning:** The API spec is subject to breaking changes at any time
+### GET `/download`
 
-
-
-### GET `/data/all`
-
-Gets all metadata about the project (combines the data from all subroutes listed below)
+Gets the latest available versions for download.
 
 #### Response (success, `200`, `application/json`)
 
 ```json
 {
-  "version": "...",
-  "versionTimestamp": 0,
-  "changeLog": [ ],
-  "downloads": { },
-  "extensions": { },
-  "additionalPlugins": { },
-  "placeholderExpansions": { },
-  "discordUserCount": 0,
-  "patreonCount": 0
+  "latest": {
+    "bukkit": {
+      "fileName": "spark-1.9.15-bukkit.jar",
+      "url": "https://ci.lucko.me/job/spark/317/artifact/spark-bukkit/build/libs/spark-1.9.15-bukkit.jar"
+    },
+    "fabric": {
+      "fileName": "spark-1.9.15-fabric.jar",
+      "url": "https://ci.lucko.me/job/spark/317/artifact/spark-fabric/build/libs/spark-1.9.15-fabric.jar"
+    },
+    "forge": {
+      "fileName": "spark-1.9.15-forge.jar",
+      "url": "https://ci.lucko.me/job/spark/317/artifact/spark-forge/build/libs/spark-1.9.15-forge.jar"
+    },
+    ...
+  }
 }
 ```
 
-> see below for example data
+___
 
-#### Response (error, `500`)
+### GET `/download/:platform`
 
-```
-<error message>
-```
+Downloads the latest available version for the given platform.
 
-#### Sub routes
+#### Response (success, `200`, `application/java-archive`)
 
-##### GET `/data/version`
+> Streams the jar file contents
 
-Gets the latest version of the plugin, and the timestamp at which it was built.
+___
+
+### GET `/version`
+
+Gets the current version information.
+
+#### Response (success, `200`, `application/json`)
 
 ```json
 {
-  "version": "5.2.17",
-  "versionTimestamp": 1603881787470
+  "version": {
+    "name": "1.9.15",
+    "timestamp": 1656193829608
+  }
 }
 ```
 
-##### GET `/data/changelog`
+___
 
-Gets the changelog for the most recent versions (currently last 10).
+### GET `/changelog`
+
+Gets the current changelog.
+
+#### Response (success, `200`, `application/json`)
 
 ```json
 {
   "changeLog": [
     {
-      "version": "5.2.17",
-      "timestamp": 1603881787470,
-      "title": "Make storage meta keys translatable",
-      "commit": "15d3000fc1028139c1a1ff84aa676b63ab8eb28a"
+      "version": "1.9.15",
+      "timestamp": 1656193748739,
+      "title": "Add providers for world (entity/chunk) statistics",
+      "commit": "24d94a18a66d68e9a37a3f68d12ddda1c628b704"
     },
     {
-      "version": "5.2.16",
-      "timestamp": 1603633177757,
-      "title": "Implement localisation for displaying durations",
-      "commit": "ad174742e93a8cc8207b7cd311785448d9bd5762"
-    }
-  ]
-}
-```
-
-##### GET `/data/downloads`
-
-Gets the direct download URLs for the latest version.
-
-```json
-{
-  "downloads": {
-    "bukkit": "https://ci.lucko.me/job/LuckPerms/1188/artifact/bukkit/build/libs/LuckPerms-Bukkit-5.2.23.jar",
-    "bukkit-legacy": "https://ci.lucko.me/job/LuckPerms/1188/artifact/bukkit-legacy/build/libs/LuckPerms-Bukkit-Legacy-5.2.23.jar",
-    "bungee": "https://ci.lucko.me/job/LuckPerms/1188/artifact/bungee/build/libs/LuckPerms-Bungee-5.2.23.jar",
-    "nukkit": "https://ci.lucko.me/job/LuckPerms/1188/artifact/nukkit/build/libs/LuckPerms-Nukkit-5.2.23.jar",
-    "sponge": "https://ci.lucko.me/job/LuckPerms/1188/artifact/sponge/build/libs/LuckPerms-Sponge-5.2.23.jar",
-    "velocity": "https://ci.lucko.me/job/LuckPerms/1188/artifact/velocity/build/libs/LuckPerms-Velocity-5.2.23.jar"
-  }
-}
-```
-
-##### GET `/data/extensions`
-
-Gets the direct download URLs for the latest version of each of the official expansions.
-
-```json
-{
-  "extensions": {
-    "extension-legacy-api": "https://ci.lucko.me/job/extension-legacy-api/9/artifact/build/libs/extension-legacy-api-1.0.0.jar",
-    "extension-default-assignments": "https://ci.lucko.me/job/extension-default-assignments/5/artifact/build/libs/extension-default-assignments-1.1.0.jar"
-  }
-}
-```
-
-##### GET `/data/additional-plugins`
-
-Gets the direct download URLs for the latest version of each of the additional plugins released for the project.
-
-```json
-{
-  "additionalPlugins": {
-    "extracontexts": "https://ci.lucko.me/job/extracontexts/14/artifact/target/ExtraContexts.jar"
-  }
-}
-```
-
-##### GET `/data/placeholder-expansions`
-
-Gets the direct download URLs for the latest version of each of the Placeholder expansions for the project.
-
-```json
-{
-  "placeholderExpansions": {
-    "luckperms-mvdw-hook": "https://ci.lucko.me/job/LuckPermsPlaceholders/22/artifact/luckperms-mvdw-hook/target/LuckPermsMVdWHook.jar",
-    "luckperms-papi-expansion": "https://ci.lucko.me/job/LuckPermsPlaceholders/22/artifact/luckperms-papi-expansion/target/Expansion-LuckPerms.jar"
-  }
-}
-```
-
-##### GET `/data/discord-count`
-
-Gets the current number of users on the LuckPerms Discord server.
-
-```json
-{
-  "discordUserCount": 10439
-}
-```
-
-##### GET `/data/patreon-count`
-
-Gets the current number of people subscribed to @lucko's Patreon.
-
-```json
-{
-  "patreonCount": 35
-}
-```
-
----
-
-### GET `/data/translations`
-
-Gets information about the available translations for the plugin.
-
-#### Response (success, `200`, `application/json`)
-
-```json
-{
-  "languages": {
-    "es-ES": {
-      "name": "Spanish",
-      "localeTag": "es_ES",
-      "progress": 100,
-      "contributors": [
-        {
-          "name": "Example User 1",
-          "translated": 614
-        },
-        {
-          "name": "Example User 2",
-          "translated": 557
-        }
-      ]
-    }
-  }
-}
-```
-
-* The "key" of the inner objects refers to the locale ID. This is what is used to request the translation bundle.
-* `progress` is a value between `0` and `100`, indicating the translation coverage percent.
-
-#### Response (error, `500`)
-
-```
-<error message>
-```
-
----
-
-### GET `/data/donors`
-
-Gets information about the projects donors.
-
-#### Response (success, `200`, `application/json`)
-
-```json
-{
-  "donors": [
+      "version": "1.9.14",
+      "timestamp": 1655762920971,
+      "title": "New paper config location (#217)",
+      "commit": "28cf3185c1374c4b5af277ef28482299694209a3"
+    },
     {
-      "name": "Sample",
-      "discord": 253217226783940124,
-      "tiers": [
-        "Patron"
-      ]
+      "version": "1.9.13",
+      "timestamp": 1654977921056,
+      "title": "Tidy up placeholder handling",
+      "commit": "2bf40231437633793ba475763a44084e9fff0ad3"
     }
   ]
 }
-```
-
-* `discord` refers to the users Discord snowflake ID - can be null.
-* `tiers` refers to the Patreon tiers the user currently has - can be empty.
-
-#### Response (error, `500`)
-
-```
-<error message>
-```
-
----
-
-### GET `/translation/<id>`
-
-Gets a translation bundle file.
-
-The available translations and their corresponding IDs can be obtained from `/data/translations`.
-
-#### Response (success, `200`, `text/x-java-properties`)
-
-```properties
-luckperms.logs.actionlog-prefix=REGISTRO
-luckperms.logs.verbose-prefix=VB
-luckperms.logs.export-prefix=EXPORTAR
-...
-```
-
-#### Response (error, `500`)
-
-```
-<error message>
 ```

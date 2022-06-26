@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jenkinsUrl } from './util';
 
 export interface JenkinsChangelogData {
   changeLog: Array<JenkinsChangeData>;
@@ -12,7 +13,8 @@ export interface JenkinsChangeData {
 }
 
 const url =
-  'https://ci.lucko.me/job/LuckPerms/api/json?tree=builds[timestamp,result,artifacts[fileName],changeSet[items[msg,commitId]]]';
+  jenkinsUrl +
+  'job/spark/api/json?tree=builds[timestamp,result,artifacts[fileName],changeSet[items[msg,commitId]]]';
 
 export async function fetchData(): Promise<JenkinsChangelogData> {
   const resp = (await axios.get(url)).data;
@@ -27,10 +29,7 @@ export async function fetchData(): Promise<JenkinsChangelogData> {
       const changes = buildData.changeSet.items;
       if (changes.length > 0) {
         changeLog.push({
-          version: buildData.artifacts[0].fileName
-            .split('-')
-            .pop()
-            .slice(0, -4),
+          version: buildData.artifacts[0].fileName.split('-')[1],
           timestamp: buildData.timestamp,
           title: changes[0].msg,
           commit: changes[0].commitId,

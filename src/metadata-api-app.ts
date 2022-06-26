@@ -4,28 +4,18 @@ import prom from 'express-prom-bundle';
 import morgan from 'morgan';
 import { DataManager } from './data-manager';
 import { DataRouter } from './routers/data-router';
-import { TranslationRouter } from './routers/translation-router';
-import { TranslationManager } from './translation-manager';
 
 export class MetadataApiApp {
   express: express.Express;
-
   dataManager: DataManager;
-  translationManager: TranslationManager;
-
   dataRouter: DataRouter;
-  translationRouter: TranslationRouter;
 
   constructor() {
     this.express = express();
     this.configure();
 
     this.dataManager = new DataManager();
-    this.translationManager = new TranslationManager(this.dataManager);
-
     this.dataRouter = new DataRouter(this.dataManager);
-    this.translationRouter = new TranslationRouter(this.translationManager);
-
     this.setupRoutes();
   }
 
@@ -57,8 +47,7 @@ export class MetadataApiApp {
 
   setupRoutes() {
     this.express.use('/health', this.health);
-    this.express.use('/data', this.dataRouter.express);
-    this.express.use('/translation', this.translationRouter.express);
+    this.express.use('/', this.dataRouter.express);
   }
 
   health(req: Request, res: Response) {
