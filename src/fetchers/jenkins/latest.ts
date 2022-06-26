@@ -54,9 +54,9 @@ export async function fetchData(): Promise<JenkinsLatestBuildData> {
 }
 
 async function sha1Hash(url: string) {
-  const absUrl = url.replace('https://ci.lucko.me/', jenkinsUrl);
+  const localUrl = url.replace('https://ci.lucko.me/', jenkinsUrl);
 
-  const resp = await axios.get(absUrl, {
+  const resp = await axios.get(localUrl, {
     responseType: 'stream',
   });
   const stream = resp.data;
