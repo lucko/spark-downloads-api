@@ -1,8 +1,6 @@
 import axios from 'axios';
 import express, { Request, Response } from 'express';
 import { DataManager } from '../data-manager';
-import { CombinedData } from '../fetchers';
-import { JenkinsData } from '../fetchers/jenkins';
 
 export class DataRouter {
   dataManager: DataManager;
@@ -11,35 +9,21 @@ export class DataRouter {
   constructor(dataManager: DataManager) {
     this.dataManager = dataManager;
     this.express.get('/version', this.version.bind(this));
-    this.express.get('/changelog', this.changelog.bind(this));
     this.express.get('/download', this.latest.bind(this));
     this.express.get('/download/:platform', this.latestPlatform.bind(this));
-  }
-
-  all(_: Request, res: Response) {
-    const data: Partial<CombinedData> = {
-      ...this.dataManager.jenkins,
-    };
-    res.send(data);
+    this.express.get('/download/:platform/sha1', this.latestPlatformSha1.bind(this));
   }
 
   version(_: Request, res: Response) {
-    const data: Partial<JenkinsData> = {
-      version: this.dataManager.jenkins?.version,
-    };
-    res.send(data);
-  }
-
-  changelog(_: Request, res: Response) {
-    const data: Partial<JenkinsData> = {
-      changeLog: this.dataManager.jenkins?.changeLog,
+    const data = {
+      ...this.dataManager.jenkins?.version,
     };
     res.send(data);
   }
 
   latest(_: Request, res: Response) {
-    const data: Partial<JenkinsData> = {
-      latest: this.dataManager.jenkins?.latest,
+    const data = {
+      ...this.dataManager.jenkins?.latest,
     };
     res.send(data);
   }
@@ -70,5 +54,22 @@ export class DataRouter {
     );
 
     proxyResponse.data.pipe(res);
+  }
+
+  async latestPlatformSha1(req: Request, res: Response) {
+    const platform = req.params.platform;
+    const files = this.dataManager.jenkins?.latest;
+    if (!files || !platform) {
+      res.status(400).send({ error: 'Try again later' });
+      return;
+    }
+
+    const file = files[platform];
+    if (file == undefined) {
+      res.status(404).send({ error: 'Not a platform: ' + platform });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/plain').send(file.sha1);
   }
 }

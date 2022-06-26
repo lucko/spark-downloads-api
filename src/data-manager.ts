@@ -14,7 +14,7 @@ export class DataManager {
 
       setInterval(async () => {
         await this.refreshJenkins();
-      }, 30000); // 30 seconds
+      }, 120000); // 2 min
     });
   }
 
