@@ -11,6 +11,7 @@ export class DataRouter {
     this.dataManager = dataManager;
     this.express.get('/version', this.version.bind(this));
     this.express.get('/download', this.latest.bind(this));
+    this.express.get('/changelog', this.changelog.bind(this));
     this.express.get('/download/:platform', this.latestPlatform.bind(this));
     this.express.get(
       '/download/:platform/sha1',
@@ -28,6 +29,13 @@ export class DataRouter {
   latest(_: Request, res: Response) {
     const data = {
       ...this.dataManager.jenkins?.latest,
+    };
+    res.send(data);
+  }
+
+  changelog(_: Request, res: Response) {
+    const data = {
+      changelog: this.dataManager.git?.changelog,
     };
     res.send(data);
   }

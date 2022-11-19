@@ -1,3 +1,4 @@
+import { fetchData as fetchGitData, GitData } from './fetchers/git';
 import { fetchData as fetchJenkinsData, JenkinsData } from './fetchers/jenkins';
 
 /**
@@ -5,6 +6,7 @@ import { fetchData as fetchJenkinsData, JenkinsData } from './fetchers/jenkins';
  */
 export class DataManager {
   jenkins?: JenkinsData;
+  git?: GitData;
 
   setup: Promise<void>;
 
@@ -14,6 +16,7 @@ export class DataManager {
 
       setInterval(async () => {
         await this.refreshJenkins();
+        await this.refreshGit();
       }, 120000); // 2 min
     });
   }
@@ -23,11 +26,15 @@ export class DataManager {
   }
 
   refresh(): Promise<any> {
-    return Promise.all([this.refreshJenkins()]);
+    return Promise.all([this.refreshJenkins(), this.refreshGit()]);
   }
 
   async refreshJenkins() {
     this.jenkins = (await fetch(fetchJenkinsData)) || this.jenkins;
+  }
+
+  async refreshGit() {
+    this.git = (await fetch(fetchGitData)) || this.git;
   }
 }
 
