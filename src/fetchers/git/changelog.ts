@@ -39,7 +39,7 @@ export async function fetchData(): Promise<GitChangelogData> {
 
   const commitsToTag = await getCommitsToTag(dir);
 
-  let minor: string | null = null;
+  let minor: string = 'v0.1';
   let patch = 0;
 
   const changelog: ChangelogEntry[] = [];
@@ -53,10 +53,8 @@ export async function fetchData(): Promise<GitChangelogData> {
     }
 
     const msg = commit.commit.message.split('\n')[0].trim();
-    const version = minor ? `${minor}.${patch}` : `build ${patch + 1}`;
-
     changelog.push({
-      version,
+      version: `${minor}.${patch}`,
       timestamp: commit.commit.committer.timestamp,
       title: msg,
       commit: commit.oid,
